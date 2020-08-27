@@ -23,6 +23,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 
 /**
+ * 这是一个具体的应用上下文，主要功能已在父类实现，此类只需要实现和它自身实现所需要的功能即可。
  * Standalone XML application context, taking the context definition files
  * from the file system or from URLs, interpreting plain paths as relative
  * file system locations (e.g. "mydir/myfile.txt"). Useful for test harnesses
@@ -137,14 +138,15 @@ public class FileSystemXmlApplicationContext extends AbstractXmlApplicationConte
 			throws BeansException {
 
 		super(parent);
-		setConfigLocations(configLocations);
+		setConfigLocations(configLocations);//设置资源路径（spring 字符串形式的路径）
 		if (refresh) {
-			refresh();
+			refresh();//容器启动的入口
 		}
 	}
 
 
 	/**
+	 * 解析资源路径为文件系统路径。通过FileSystemResource对象Spring就可以进行相关的I/O操作完成beanDefinition的定位
 	 * Resolve resource paths as file system paths.
 	 * <p>Note: Even if a given path starts with a slash, it will get
 	 * interpreted as relative to the current VM working directory.

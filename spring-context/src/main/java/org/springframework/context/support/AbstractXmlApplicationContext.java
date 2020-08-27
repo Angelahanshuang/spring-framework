@@ -72,6 +72,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 
 
 	/**
+	 * 通过XmlBeanDefinitionReader 载入bean定义信息
 	 * Loads the bean definitions via an XmlBeanDefinitionReader.
 	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 	 * @see #initBeanDefinitionReader
@@ -79,7 +80,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 */
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
-		// Create a new XmlBeanDefinitionReader for the given BeanFactory.
+		//创建XmlBeanDefinitionReader并通过回调设置到BeanFactory中去。 Create a new XmlBeanDefinitionReader for the given BeanFactory.
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 
 		// Configure the bean definition reader with this context's
@@ -90,7 +91,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 
 		// Allow a subclass to provide custom initialization of the reader,
 		// then proceed with actually loading the bean definitions.
-		initBeanDefinitionReader(beanDefinitionReader);
+		initBeanDefinitionReader(beanDefinitionReader);//启动bean定义信息载入的过程
 		loadBeanDefinitions(beanDefinitionReader);
 	}
 
@@ -118,8 +119,10 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see #getResources
 	 * @see #getResourcePatternResolver
 	 */
+	//首先得到BeanDefinition信息的Resource定位，然后直接调用XmlBeanDefinitionReader来读取，具体的载入过程委托给BeanDefinitionReader完成的。
+	//因为这里的BeanDefinition是使用XML文件定义的，所以使用XmlBeanDefinitionReader来载入BeanDefinition到容器中。
 	protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
-		Resource[] configResources = getConfigResources();
+		Resource[] configResources = getConfigResources();//以resource的形式获取资源位置
 		if (configResources != null) {
 			reader.loadBeanDefinitions(configResources);
 		}
@@ -133,9 +136,10 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * Return an array of Resource objects, referring to the XML bean definition
 	 * files that this context should be built with.
 	 * <p>The default implementation returns {@code null}. Subclasses can override
-	 * this to provide pre-built Resource objects rather than location Strings.
+	 * this to provide pre-built Resource objects rather than location Strings.  子类可以重写此方法以提供预构建的Resource对象，而不是location字符串。
 	 * @return an array of Resource objects, or {@code null} if none
 	 * @see #getConfigLocations()
+	 * @see ClassPathXmlApplicationContext :getConfigResources()
 	 */
 	@Nullable
 	protected Resource[] getConfigResources() {

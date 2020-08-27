@@ -953,7 +953,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	//---------------------------------------------------------------------
 	// Implementation of BeanDefinitionRegistry interface
 	//---------------------------------------------------------------------
-
+	//完成beanDefinition的注册，即完成IOC容器的初始化过程
 	@Override
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 			throws BeanDefinitionStoreException {
@@ -973,7 +973,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
 		if (existingDefinition != null) {
-			if (!isAllowBeanDefinitionOverriding()) {
+			if (!isAllowBeanDefinitionOverriding()) {//这里检查是不是有相同名字的beanDefinition已经在IOC容器中注册了，如果有相同的，但又不允许覆盖则抛出异常
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
 			else if (existingDefinition.getRole() < beanDefinition.getRole()) {
@@ -1001,24 +1001,24 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
-			if (hasBeanCreationStarted()) {
-				// Cannot modify startup-time collection elements anymore (for stable iteration)
+			if (hasBeanCreationStarted()) {//检查bean的创建是否已经开始 @since 4.2.2
+				//不能再修改启动时集合元素（用于稳定的迭代/保证数据的一致性）。 Cannot modify startup-time collection elements anymore (for stable iteration)
 				synchronized (this.beanDefinitionMap) {
-					this.beanDefinitionMap.put(beanName, beanDefinition);
+					this.beanDefinitionMap.put(beanName, beanDefinition);//注册到容器，beanName为key，定义信息为值
 					List<String> updatedDefinitions = new ArrayList<>(this.beanDefinitionNames.size() + 1);
 					updatedDefinitions.addAll(this.beanDefinitionNames);
 					updatedDefinitions.add(beanName);
-					this.beanDefinitionNames = updatedDefinitions;
-					removeManualSingletonName(beanName);
+					this.beanDefinitionNames = updatedDefinitions;//TODO tians 为什么不是直接beanDefinitionNames.add呢？
+					removeManualSingletonName(beanName);//（更新工厂内部的手动单例名称集。）目前还不知道这段具体的作用
 				}
 			}
 			else {
-				// Still in startup registration phase
+				//仍处于启动注册阶段。 Still in startup registration phase
 				this.beanDefinitionMap.put(beanName, beanDefinition);
 				this.beanDefinitionNames.add(beanName);
 				removeManualSingletonName(beanName);
 			}
-			this.frozenBeanDefinitionNames = null;
+			this.frozenBeanDefinitionNames = null;//冻结的beanDefinitionNames为空
 		}
 
 		if (existingDefinition != null || containsSingleton(beanName)) {
@@ -1130,7 +1130,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	}
 
 	/**
-	 * Update the factory's internal set of manual singleton names.
+	 * 更新工厂内部的手动单例名称集。Update the factory's internal set of manual singleton names.
 	 * @param action the modification action
 	 * @param condition a precondition for the modification action
 	 * (if this condition does not apply, the action can be skipped)
@@ -1142,7 +1142,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				if (condition.test(this.manualSingletonNames)) {
 					Set<String> updatedSingletons = new LinkedHashSet<>(this.manualSingletonNames);
 					action.accept(updatedSingletons);
-					this.manualSingletonNames = updatedSingletons;
+					this.manualSingletonNames = updatedSingletons;//manualSingletonNames:手动注册的单例名称列表，按注册顺序
 				}
 			}
 		}
